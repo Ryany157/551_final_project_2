@@ -1,6 +1,8 @@
 import os
 import tkinter.messagebox
 import tkinter.filedialog
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from Book import Book
 from Show import Show
 
@@ -14,7 +16,7 @@ class Recommender:
     def loadBooks(self):
         #books10.csv -> self.__books
         filename = tkinter.filedialog.askopenfilename(title="Files",initialdir=os.getcwd())
-        while os.path.exists(filename):
+        while not os.path.exists(filename):
             filename = tkinter.filedialog.askopenfilename(title="Files",initialdir=os.getcwd())
         file = open(filename, "r")
         for line in file:
@@ -29,7 +31,7 @@ class Recommender:
     def loadShows(self):
         #shows10.csv -> self.__shows
         filename = tkinter.filedialog.askopenfilename(title="Files", initialdir=os.getcwd())
-        while os.path.exists(filename):
+        while not os.path.exists(filename):
             filename = tkinter.filedialog.askopenfilename(title="Files", initialdir=os.getcwd())
         file = open(filename, "r")
         for line in file:
@@ -44,7 +46,7 @@ class Recommender:
     def loadAssociations(self):
         # associated10.csv -> self.__associations
         filename = tkinter.filedialog.askopenfilename(title="Files", initialdir=os.getcwd())
-        while os.path.exists(filename):
+        while not os.path.exists(filename):
             filename = tkinter.filedialog.askopenfilename(title="Files", initialdir=os.getcwd())
         file = open(filename, "r")
         for line in file:
@@ -73,33 +75,64 @@ class Recommender:
         # print(self.__associations)
         file.close()
 
-    # done but format
+    # done
     def getMovieList(self):
-        movieList = "Title\t Movie"
-        for show in self.__shows.values():   # show -> <object>
+        titleWidth = 0
+        durationWidth = 0
+        for show in self.__shows.values():  # show -> <object>
             if show.getType() == "Movie":
-                movieList += f"{show.getTitle()}\t{show.getDuration()}\n"
+                if len(show.getTitle()) > titleWidth:
+                    titleWidth = len(show.getTitle())
+                if len(show.getDuration()) > durationWidth:
+                    durationWidth = len(show.getDuration())
+
+        movieList = f"{"Title":<{titleWidth + 3}}{"Runtime":<{durationWidth}}\n"
+
+        for show in self.__shows.values():  # show -> <object>
+            if show.getType() == "Movie":
+                movieList += f"{show.getTitle():<{titleWidth + 3}}{show.getDuration():<{durationWidth}}\n"
         return movieList
 
-    # done but format
+    # done
     def getTVList(self):
-        tvList = "Title\t Seasons"
-        for show in self.__shows.values():   # show -> <object>
+        titleWidth = 0
+        seasonsWidth = 0
+
+        for show in self.__shows.values():  # show -> <object>
             if show.getType() == "TV Show":
-                tvList += f"{show.getTitle()}\t{show.getDuration()}\n"
+                if len(show.getTitle()) > titleWidth:
+                    titleWidth = len(show.getTitle())
+                if len(show.getDuration()) > seasonsWidth:
+                    seasonsWidth = len(show.getDuration())
+
+        tvList = f"{"Title":<{titleWidth + 3}}{"Seasons":<{seasonsWidth}}\n"
+
+        for show in self.__shows.values():  # show -> <object>
+            if show.getType() == "TV Show":
+                tvList += f"{show.getTitle():<{titleWidth + 3}}{show.getDuration():<{seasonsWidth}}\n"
         return tvList
 
-    # done but format
+    # done
     def getBookList(self):
-        bookList = "Title\t Author"
-        for book in self.__books.values():
-            bookList += f"{book.getTitle()}\t{book.getAuthors()}\n"
+        titleWidth = 0
+        authorWidth = 0
+        for book in self.__books.values():  # show -> <object>
+            if len(book.getTitle()) > titleWidth:
+                titleWidth = len(book.getTitle())
+            if len(book.getAuthors()) > authorWidth:
+                authorWidth = len(book.getAuthors())
+
+        bookList = f"{"Title":<{titleWidth + 3}}{"Author(s)":<{authorWidth}}\n"
+
+        for book in self.__books.values():  # show -> <object>
+            if book.getId() != "bookID":   # filter the info of first line
+                bookList += f"{book.getTitle():<{titleWidth + 3}}{book.getAuthors():<{authorWidth}}\n"
         return bookList
 
     # ***Statistics***
     def getMovieStats(self):
         #
-        title = "Ratings:"
+        title = "Ratings:\n"
         rate = {}  # {"rate": 1}
         director = {}
         actor = {}
@@ -145,7 +178,7 @@ class Recommender:
             rateStats += f"{i} {rate[i]/count:.2%}\n"
 
         # average duration
-        averageStats = f"Average Movie Duration {duration / count:.2f} minutes"
+        averageStats = f"Average Movie Duration {duration / count:.2f} minutes\n"
 
         # most Director
         countDirec = 0
@@ -154,7 +187,7 @@ class Recommender:
             if director[i] > countDirec and i != '':
                 countDirec = director[i]
                 mostDirec = i
-        directorStats = f"Most prolific Director: {mostDirec}"
+        directorStats = f"Most prolific Director: {mostDirec}\n"
 
         # most Actor
         countAct = 0
@@ -163,7 +196,7 @@ class Recommender:
             if actor[i] > countAct and i != '':
                 countAct = actor[i]
                 mostAct = i
-        actorStats = f"Most prolific Actor: {mostAct}"
+        actorStats = f"Most prolific Actor: {mostAct}\n"
 
         # most Genre
         countGen = 0
@@ -172,9 +205,9 @@ class Recommender:
             if genre[i] > countGen and i != '':
                 countGen = genre[i]
                 mostGen = i
-        genreStats = f"Most prolific Genre: {mostGen}"
+        genreStats = f"Most prolific Genre: {mostGen}\n"
 
-        movieStats = f"{title}\n{rateStats}\n{averageStats}\n{directorStats}\n{actorStats}\n{genreStats}"
+        movieStats = f"{title}{rateStats}\n{averageStats}\n{directorStats}\n{actorStats}\n{genreStats}"
 
         return movieStats
 
@@ -218,7 +251,7 @@ class Recommender:
             rateStats += f"{i} {rate[i] / count:.2%}\n"
 
         # average duration
-        averageStats = f"Average Number of Seasons {duration / count:.2f} seasons"
+        averageStats = f"Average Number of Seasons {duration / count:.2f} seasons\n"
 
         # most Actor
         countAct = 0
@@ -227,7 +260,7 @@ class Recommender:
             if actor[i] > countAct and i != '':
                 countAct = actor[i]
                 mostAct = i
-        actorStats = f"Most prolific Actor: {mostAct}"
+        actorStats = f"Most prolific Actor: {mostAct}\n"
 
         # most Genre
         countGen = 0
@@ -236,13 +269,13 @@ class Recommender:
             if genre[i] > countGen and i != '':
                 countGen = genre[i]
                 mostGen = i
-        genreStats = f"Most prolific Genre: {mostGen}"
+        genreStats = f"Most prolific Genre: {mostGen}\n"
 
         tvshowStats = f"{title}\n{rateStats}\n{averageStats}\n{actorStats}\n{genreStats}"
 
         return tvshowStats
 
-    def bookStats(self):
+    def getBookStats(self):
         author = {}
         genre = {}
         count = 0  # number of movie
@@ -268,7 +301,7 @@ class Recommender:
                         genre[i] += 1
 
         # average duration
-        averageStats = f"Average Page {pages / count:.2f} pages"
+        averageStats = f"Average Page {pages / count:.2f} pages\n"
 
         # most Author
         countAut = 0
@@ -277,7 +310,7 @@ class Recommender:
             if author[i] > countAut and i != '':
                 countAut = author[i]
                 mostAut = i
-        autorStats = f"Most prolific Autor: {mostAut}"
+        autorStats = f"Most prolific Autor: {mostAut}\n"
 
         # most Genre
         countGen = 0
@@ -286,74 +319,100 @@ class Recommender:
             if genre[i] > countGen and i != '':
                 countGen = genre[i]
                 mostGen = i
-        genreStats = f"Most Prolific Publisher: {mostGen}"
+        genreStats = f"Most Prolific Publisher: {mostGen}\n"
 
         bookStats = f"{averageStats}\n{autorStats}\n{genreStats}"
 
         return bookStats
 
-    # done but format
-    def searchTVMovies(self, show="", title="", director="", genre=""):
-        if show not in ["Movie", "TV Show"]:
+    # done
+    def searchTVMovies(self, show="", title="", director="", actor="", genre=""):
+        search = set()  # store the object
+        titleWidth = 8
+        directorWidth = 10
+        actorWidth = 8
+        genreWidth = 0
+        if show not in ["Movies", "TV Shows"]:
             tkinter.messagebox.showerror(title="Error", message=f"Please select Movie or TV Show from Type first!")
             return "No Results"
-        elif title == "" and director == "" and genre == "":
+        elif title == "" and director == "" and actor =="" and genre == "":
             tkinter.messagebox.showerror(title="Error", message=f"Please enter information for the Title, Directory, Actor and/or Genre first!")
             return "No Results"
         else:
-            # 对非“”的元素进行比对
             for i in self.__shows.values():
-                if title in i.getTitle() and title != "":
-                    searchresult = f"=>\n{i.getTitle()}\n{i.getDirectors()}\n{i.getActors()}\n{i.getGenres()}"
-                    return searchresult
+                if title in i.getTitle() and title != "":  # filter the ""
+                    search.add(i)
                 if director in i.getDirectors() and director != "":
-                    searchresult = f"==>\n{i.getTitle()}\n{i.getDirectors()}\n{i.getActors()}\n{i.getGenres()}"
-                    return searchresult
+                    search.add(i)
+                if actor in i.getActors() and actor != "":
+                    search.add(i)
                 if genre in i.getGenres() and genre != "":
-                    searchresult = f"===>\n{i.getTitle()}\n{i.getDirectors()}\n{i.getActors()}\n{i.getGenres()}"
-                    return searchresult
+                    search.add(i)
+            if len(search) == 0: return "No Results"  # if there is no related shows
+            for i in search:  # i -> <target object>
+                if len(i.getTitle()) > titleWidth: titleWidth = len(i.getTitle())
+                if len(i.getDirectors()) > directorWidth: directorWidth = len(i.getDirectors())
+                if len(i.getActors()) > actorWidth: actorWidth = len(i.getActors())
+                if len(i.getGenres()) > genreWidth: genreWidth = len(i.getGenres())
 
-    # done but format
+            searchresult = f"{"Title":<{titleWidth + 3}}{"Director":<{directorWidth + 3}}{"Actor":<{actorWidth + 3}}{"Genre":<{genreWidth + 3}}\n"
+            for i in search:
+                searchresult += f"{i.getTitle():<{titleWidth + 3}}{i.getDirectors():<{directorWidth + 3}}{i.getActors():<{actorWidth + 3}}{i.getGenres():<{genreWidth + 3}}\n"
+
+            return searchresult
+
+    # done
     def searchBooks(self, title="", author="", publisher=""):
+        search = set()
+        titleWidth = 8
+        authorWidth = 8
+        publisherWidth = 11
         if title == "" and author == "" and publisher == "":
             tkinter.messagebox.showerror(title="Error", message=f"Please enter information for the Title, Author, and/or Publisher first!")
             return "No Results"
         else:
             # 对非“”的元素进行比对
             for i in self.__books.values():
-                if title in i.getTitle() and title != "":
-                    searchresult = f"=>\n{i.getTitle()}\n{i.getAuthors()}\n{i.getPublisher()}"
-                    return searchresult
+                if title in i.getTitle() and title != "":  # filter the ""
+                    search.add(i)
                 if author in i.getAuthors() and author != "":
-                    searchresult = f"==>\n{i.getTitle()}\n{i.getAuthors()}\n{i.getPublisher()}"
-                    return searchresult
+                    search.add(i)
                 if publisher in i.getPublisher() and publisher != "":
-                    searchresult = f"===>\n{i.getTitle()}\n{i.getAuthors()}\n{i.getPublisher()}"
-                    return searchresult
+                    search.add(i)
+            if len(search) == 0: return "No Results"   # if there is no related books
+            for i in search:  # i -> <target object>
+                if len(i.getTitle()) > titleWidth: titleWidth = len(i.getTitle())
+                if len(i.getAuthors()) > authorWidth: authorWidth = len(i.getAuthors())
+                if len(i.getPublisher()) > publisherWidth: publisherWidth = len(i.getPublisher())
+
+            searchresult = f"{"Title":<{titleWidth + 3}}{"Author":<{authorWidth + 3}}{"Publisher":<{publisherWidth + 3}}\n"
+            for i in search:
+                searchresult += f"{i.getTitle():<{titleWidth + 3}}{i.getAuthors():<{authorWidth + 3}}{i.getPublisher():<{publisherWidth + 3}}\n"
+            return searchresult
 
     # done
     def getRecommendations(self, type="", title=""):
         recommendInfo = ""
-        if type in ["Movie", "TV Show"]:
-            print("show!")
+        if type in ["Movies", "TV Shows"]:
+            #print("show!")
             for show in self.__shows.values():
                 if title == show.getTitle():  # whether title is exist 存在则进入
                     showId = show.getId()  # string: show id
-                    print("show id=", showId)
-                    print(self.__associations[showId].keys())
+                    #print("show id=", showId)
+                    #print(self.__associations[showId].keys())
                     for i in self.__associations[showId].keys():  # i -> "book id"
                         recommendInfo += self.__books[i].__str__()  # books[i] -> object
                     return recommendInfo
             # title no exsit
             return "No result!"
 
-        if type == "Book":
-            print("Book!")
+        if type == "Books":
+            #print("Book!")
             for book in self.__books.values():
                 if title == book.getTitle():  # whether title is exist 存在则进入
                     bookId = book.getId()  # string: book id
-                    print("book id=", bookId)
-                    print(self.__associations[bookId].keys())
+                    #print("book id=", bookId)
+                    #print(self.__associations[bookId].keys())
                     for i in self.__associations[bookId].keys():  # i -> "show id"
                         recommendInfo += self.__shows[i].__str__()  # shows[i] -> object
                     return recommendInfo
@@ -363,5 +422,55 @@ class Recommender:
         else:   #if user do not select any combobox items
             return "No result!"
 
+    def getMovieRatings(self):
+        rate = {}  # {"rate": 1}
+        labels = []
+        sizes = []
+        for show in self.__shows.values():  # show -> <object>
+            if show.getType() == "Movie":
 
+                # Rating for movies
+                if show.getShowRating() not in rate:
+                    rate[show.getShowRating()] = 1
+                else:
+                    rate[show.getShowRating()] += 1
+
+        for i in rate.keys():
+            labels.append(i)
+            sizes.append(rate[i])
+            # print(labels)
+            # print(sizes)
+
+        fig = Figure(figsize=(3, 3))  # 5x5 inches
+        plt = fig.add_subplot(111)
+        # Plotting the pie chart
+        plt.pie(sizes, labels=labels, autopct='%.2f%%', textprops={'fontsize': 7})
+
+        return fig
+
+    def getTVRatings(self):
+        rate = {}  # {"rate": 1}
+        labels = []
+        sizes = []
+        for show in self.__shows.values():  # show -> <object>
+            if show.getType() == "TV Show":
+
+                # Rating for TV Show
+                if show.getShowRating() not in rate:
+                    rate[show.getShowRating()] = 1
+                else:
+                    rate[show.getShowRating()] += 1
+
+        for i in rate.keys():
+            labels.append(i)
+            sizes.append(rate[i])
+            # print(labels)
+            # print(sizes)
+
+        fig = Figure(figsize=(3, 3))  # 5x5 inches
+        plt = fig.add_subplot(111)
+        # Plotting the pie chart
+        plt.pie(sizes, labels=labels, autopct='%.2f%%', textprops={'fontsize': 7})
+
+        return fig
 
