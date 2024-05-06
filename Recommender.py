@@ -1,7 +1,6 @@
 import os
 import tkinter.messagebox
 import tkinter.filedialog
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from Book import Book
 from Show import Show
@@ -12,13 +11,15 @@ class Recommender:
         self.__shows = {}   # key-value: id-show<object>
         self.__associations = {}   # key-value: id-dictionary(id-the number of times the outer id and inner id are associated)
 
-    # done
     def loadBooks(self):
-        #books10.csv -> self.__books
+        '''
+        Read books.csv file to create book object
+        '''
+        #books.csv -> self.__books
         filename = tkinter.filedialog.askopenfilename(title="Files",initialdir=os.getcwd())
         while not os.path.exists(filename):
             filename = tkinter.filedialog.askopenfilename(title="Files",initialdir=os.getcwd())
-        file = open(filename, "r")
+        file = open(filename, "r",encoding="utf-8")
         for line in file:
             # line is <string>
             line = line.strip()
@@ -27,13 +28,15 @@ class Recommender:
         # print(self.__books)
         file.close()
 
-    # done
     def loadShows(self):
+        '''
+        Read shows.csv file to create show object
+        '''
         #shows10.csv -> self.__shows
         filename = tkinter.filedialog.askopenfilename(title="Files", initialdir=os.getcwd())
         while not os.path.exists(filename):
             filename = tkinter.filedialog.askopenfilename(title="Files", initialdir=os.getcwd())
-        file = open(filename, "r")
+        file = open(filename, "r",encoding="utf-8")
         for line in file:
             # line is <string>
             line = line.strip()
@@ -42,13 +45,15 @@ class Recommender:
         # print(self.__shows)
         file.close()
 
-    # done
     def loadAssociations(self):
+        '''
+        Read associated.csv file to create association object
+        '''
         # associated10.csv -> self.__associations
         filename = tkinter.filedialog.askopenfilename(title="Files", initialdir=os.getcwd())
         while not os.path.exists(filename):
             filename = tkinter.filedialog.askopenfilename(title="Files", initialdir=os.getcwd())
-        file = open(filename, "r")
+        file = open(filename, "r",encoding="utf-8")
         for line in file:
             line = line.strip()
             entry = line.split(",")  # ["showid", "book id"]
@@ -61,7 +66,7 @@ class Recommender:
                     self.__associations[entry[0]][entry[1]] = 1  # add {"entry[1]": 1}
         # print(self.__associations)
         file.close()
-        file = open("associated10.csv", "r")
+        file = open(filename, "r",encoding="utf-8")
         for line in file:
             line = line.strip()
             entry = line.split(",")  # ["showid", "book id"]
@@ -75,8 +80,11 @@ class Recommender:
         # print(self.__associations)
         file.close()
 
-    # done
     def getMovieList(self):
+        '''
+        Get the information of Movie and then print out
+        :return: A String of movie information
+        '''
         titleWidth = 0
         durationWidth = 0
         for show in self.__shows.values():  # show -> <object>
@@ -93,8 +101,11 @@ class Recommender:
                 movieList += f"{show.getTitle():<{titleWidth + 3}}{show.getDuration():<{durationWidth}}\n"
         return movieList
 
-    # done
     def getTVList(self):
+        '''
+        Get the information of TV Show and then print out
+        :return: A String of TV show information
+        '''
         titleWidth = 0
         seasonsWidth = 0
 
@@ -112,8 +123,11 @@ class Recommender:
                 tvList += f"{show.getTitle():<{titleWidth + 3}}{show.getDuration():<{seasonsWidth}}\n"
         return tvList
 
-    # done
     def getBookList(self):
+        '''
+        Get the information of Book and then print out
+        :return: A String of books information
+        '''
         titleWidth = 0
         authorWidth = 0
         for book in self.__books.values():  # show -> <object>
@@ -131,7 +145,10 @@ class Recommender:
 
     # ***Statistics***
     def getMovieStats(self):
-        #
+        '''
+        Calculate the statistics of Movie and then print out
+        :return: A string of Movie Statistics
+        '''
         title = "Ratings:\n"
         rate = {}  # {"rate": 1}
         director = {}
@@ -174,8 +191,11 @@ class Recommender:
                         genre[i] += 1
 
         rateStats = ""
-        for i in rate:
-            rateStats += f"{i} {rate[i]/count:.2%}\n"
+        for i in rate.keys():
+            if i == "":
+                rateStats += f"None {rate[i] / count:.2%}\n"
+            else:
+                rateStats += f"{i} {rate[i]/count:.2%}\n"
 
         # average duration
         averageStats = f"Average Movie Duration {duration / count:.2f} minutes\n"
@@ -212,6 +232,10 @@ class Recommender:
         return movieStats
 
     def getTVStats(self):
+        '''
+        Calculate the statistics of TV Show and then print out
+        :return: A string of TV Show Statistics
+        '''
         title = "Ratings:\n"
         rate = {}  # {"rate": 1}
         director = {}
@@ -247,8 +271,11 @@ class Recommender:
                         genre[i] += 1
 
         rateStats = ""
-        for i in rate:
-            rateStats += f"{i} {rate[i] / count:.2%}\n"
+        for i in rate.keys():
+            if i == "":
+                rateStats += f"None {rate[i] / count:.2%}\n"
+            else:
+                rateStats += f"{i} {rate[i] / count:.2%}\n"
 
         # average duration
         averageStats = f"Average Number of Seasons {duration / count:.2f} seasons\n"
@@ -271,11 +298,15 @@ class Recommender:
                 mostGen = i
         genreStats = f"Most prolific Genre: {mostGen}\n"
 
-        tvshowStats = f"{title}\n{rateStats}\n{averageStats}\n{actorStats}\n{genreStats}"
+        tvshowStats = f"{title}{rateStats}\n{averageStats}\n{actorStats}\n{genreStats}"
 
         return tvshowStats
 
     def getBookStats(self):
+        '''
+        Calculate the statistics of Books and then print out
+        :return: A string of Books Statistics
+        '''
         author = {}
         genre = {}
         count = 0  # number of movie
@@ -325,9 +356,12 @@ class Recommender:
 
         return bookStats
 
-    # done
     def searchTVMovies(self, show="", title="", director="", actor="", genre=""):
-        search = set()  # store the object
+        '''
+        Get shows type and each one of the other parameter to search the Shows
+        :return: A string containing all the related information
+        '''
+        search = set()  # store the object without repeating
         titleWidth = 8
         directorWidth = 10
         actorWidth = 8
@@ -361,9 +395,12 @@ class Recommender:
 
             return searchresult
 
-    # done
     def searchBooks(self, title="", author="", publisher=""):
-        search = set()
+        '''
+        Get each one of the parameter to search the Books
+        :return: A string containing all the related information
+        '''
+        search = set()   # avoid repeating
         titleWidth = 8
         authorWidth = 8
         publisherWidth = 11
@@ -371,7 +408,7 @@ class Recommender:
             tkinter.messagebox.showerror(title="Error", message=f"Please enter information for the Title, Author, and/or Publisher first!")
             return "No Results"
         else:
-            # 对非“”的元素进行比对
+            # match the input parameter which are not ""
             for i in self.__books.values():
                 if title in i.getTitle() and title != "":  # filter the ""
                     search.add(i)
@@ -390,26 +427,29 @@ class Recommender:
                 searchresult += f"{i.getTitle():<{titleWidth + 3}}{i.getAuthors():<{authorWidth + 3}}{i.getPublisher():<{publisherWidth + 3}}\n"
             return searchresult
 
-    # done
     def getRecommendations(self, type="", title=""):
+        '''
+        Find the associated information and then print out
+        :return: A String containing associated information OR "No result"
+        '''
         recommendInfo = ""
         if type in ["Movies", "TV Shows"]:
             #print("show!")
             for show in self.__shows.values():
-                if title == show.getTitle():  # whether title is exist 存在则进入
+                if title == show.getTitle():  # whether the title is existing
                     showId = show.getId()  # string: show id
                     #print("show id=", showId)
                     #print(self.__associations[showId].keys())
                     for i in self.__associations[showId].keys():  # i -> "book id"
                         recommendInfo += self.__books[i].__str__()  # books[i] -> object
                     return recommendInfo
-            # title no exsit
+            # title not exsit
             return "No result!"
 
         if type == "Books":
             #print("Book!")
             for book in self.__books.values():
-                if title == book.getTitle():  # whether title is exist 存在则进入
+                if title == book.getTitle():  # whether the title is existing
                     bookId = book.getId()  # string: book id
                     #print("book id=", bookId)
                     #print(self.__associations[bookId].keys())
@@ -423,6 +463,10 @@ class Recommender:
             return "No result!"
 
     def getMovieRatings(self):
+        '''
+        Calculate the rates of Movie and make them into a pie chart
+        :return: A Figure
+        '''
         rate = {}  # {"rate": 1}
         labels = []
         sizes = []
@@ -441,7 +485,7 @@ class Recommender:
             # print(labels)
             # print(sizes)
 
-        fig = Figure(figsize=(3, 3))  # 5x5 inches
+        fig = Figure(figsize=(3, 3))  # 3x3 inches
         plt = fig.add_subplot(111)
         # Plotting the pie chart
         plt.pie(sizes, labels=labels, autopct='%.2f%%', textprops={'fontsize': 7})
@@ -449,6 +493,10 @@ class Recommender:
         return fig
 
     def getTVRatings(self):
+        '''
+        Calculate the rates of TV Shows and make them into a pie chart
+        :return: A Figure
+        '''
         rate = {}  # {"rate": 1}
         labels = []
         sizes = []
@@ -467,7 +515,7 @@ class Recommender:
             # print(labels)
             # print(sizes)
 
-        fig = Figure(figsize=(3, 3))  # 5x5 inches
+        fig = Figure(figsize=(3, 3))  # 3x3 inches
         plt = fig.add_subplot(111)
         # Plotting the pie chart
         plt.pie(sizes, labels=labels, autopct='%.2f%%', textprops={'fontsize': 7})
