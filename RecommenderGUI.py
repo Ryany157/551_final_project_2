@@ -59,13 +59,17 @@ class RecommenderGUI:
 
         #load Bonus
         #movies frist
+        #remove placeholder
         if self.__MovieRatings_init_Label:
             self.__MovieRatings_init_Label.destroy()
+
+        #f repeated loadshows happen, destroy canvas
         if self._RatingMovieCanvas_Indicator ==1:
             self.__MovieCanvas_frame.destroy()
 
         self.__MovieCanvas_frame = tk.Frame(self.__MovieRatings_Frame,width=750,height=300)
         self.__MovieCanvas_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1)
+
 
         MoviePlot = self.rec.getMovieRatings()
         self.__MovieCanvas = FigureCanvasTkAgg(MoviePlot,master=self.__MovieCanvas_frame)
@@ -121,13 +125,12 @@ class RecommenderGUI:
         #loadAssociations() function that takes in no parameters, returns nothing, and:
         #Calls the appropriate function from the Recommender object to read in all of the data for the associations
 
-
         self.rec.loadAssociations()
         return
 
     def creditInfoBox(self):
         messagebox.showinfo(title="Information", message="""Contributor Names: Yiwen Lin, Yulong Yang
-        20240428 still working :)""")
+        Finished by 20240505 XD""")
         return
 
     def searchShows(self):
@@ -137,8 +140,8 @@ class RecommenderGUI:
         # call Rec py
 
         #test
-        print(self._cb_Movies_TV.get())
-        print("debug01")
+        #print(self._cb_Movies_TV.get())
+        #print("debug01")
 
 
         Search_Shows_input = [self._cb_Movies_TV.get(),self._Movie_TV_Title_Entry.get(),self._Movie_TV_Director_Entry.get(),self._Movie_TV_Actor_Entry.get(),self._Movie_TV_Genre_Entry.get()]
@@ -329,7 +332,7 @@ class RecommenderGUI:
 
         self.__Search_Movies_TV_Text = tk.Text(self.__Search_Movies_TV_Text_Frame, width=1150, height=40, wrap=tk.WORD)
         self.__Search_Movies_TV_Text.pack(side=tk.TOP, fill=tk.X, expand=1)
-        self.__Search_Movies_TV_Text.insert(tk.END, "Search Movies test")
+        self.__Search_Movies_TV_Text.insert(tk.END, "Show List not loaded, please LoadShows to continue")
         self.__Search_Movies_TV_Text.configure(state=tk.DISABLED)
 
 
@@ -377,7 +380,7 @@ class RecommenderGUI:
 
         self.__Search_Books_Text = tk.Text(self.__Search_Books_Text_Frame, width=1150, height=43, wrap=tk.WORD)
         self.__Search_Books_Text.pack(side=tk.TOP, fill=tk.X, expand=1)
-        self.__Search_Books_Text.insert(tk.END, "Search Books test")
+        self.__Search_Books_Text.insert(tk.END, "Book List not loaded, please LoadBooks to continue")
         self.__Search_Books_Text.configure(state=tk.DISABLED)
 
 
@@ -415,7 +418,7 @@ class RecommenderGUI:
 
         self.__Recommendations_Text = tk.Text(self.__Recommendations_Text_Frame,height=45,wrap=tk.WORD)
         self.__Recommendations_Text.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-        self.__Recommendations_Text.insert(tk.END,"Rec Test")
+        self.__Recommendations_Text.insert(tk.END,"Recommendation List not loaded, please LoadAssociations to continue")
         self.__Recommendations_Text.configure(state=tk.DISABLED)
 
 
@@ -478,7 +481,6 @@ class RecommenderGUI:
 
 
 def main():
-
     RecommenderGUI()
 
 
